@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pax Tech | Premium Mobile & Accessories</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <section class="hero">
+        <div class="hero-overlay">
+            <div class="hero-content">
+                <h1>Welcome to Pax Tech</h1>
+                <p>Your ultimate destination for the latest smartphones and premium accessories. Quality and authenticity at your fingertips.</p>
+                <a href="#shop" class="btn-main">Explore Shop</a>
+            </div>
+        </div>
+    </section>
+
+    <nav id="shop">
+        <div class="search-container">
+            <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search products...">
+        </div>
+        <div class="category-filter">
+            <button onclick="filterItems('All')">All</button>
+            <button onclick="filterItems('Phone')">Phones</button>
+            <button onclick="filterItems('Airpods')">Airpods</button>
+            <button onclick="filterItems('Cover')">Covers</button>
+            <button onclick="filterItems('Other')">Other</button>
+        </div>
+    </nav>
+
+    <main class="container" id="product-list">
+        <p class="loading">Loading products from Pax Tech Inventory...</p>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="contact-item">
+                <a href="https://t.me/selam_446" target="_blank">
+                    <i class="fab fa-telegram"></i> @selam_446
+                </a>
+            </div>
+            <div class="contact-item">
+                <a href="tel:+251944675714">
+                    <i class="fas fa-phone-alt"></i> +251 944 675 714
+                </a>
+            </div>
+        </div>
+        <p>&copy; 2024 Pax Tech. All Rights Reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
