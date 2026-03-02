@@ -1,5 +1,5 @@
 :root {
-    --ios-blue: #0071e3;
+    --ios-blue:#0d00ff;
     --ios-dark: #1d1d1f;
     --ios-gray: #f5f5f7;
     --white: #ffffff;
@@ -40,3 +40,4 @@ footer { padding: 30px; text-align: center; background: #fff; border-top: 1px so
     .container { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
     .card img { height: 130px; }
 }
+
