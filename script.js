@@ -1,83 +1,64 @@
-// Pax Tech Official CSV Link
-const csvURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAF9rSVYWeMUZXAZqag2EerWjpgQ_RfGtlhRFhBRkFeDqNPllZ7cn7wDQn7KFBVuJquSq7balxUd-c/pub?output=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAF9rSVYWeMUZXAZqag2EerWjpgQ_RfGtlhRFhBRkFeDqNPllZ7cn7wDQn7KFBVuJquSq7balxUd-c/pub?output=csv';
 
-let allProducts = [];
-
-// 1. መረጃውን ከGoogle Sheet የማምጣት ስራ
-async function init() {
+async function initPage(targetCategory = 'all') {
     try {
-        const response = await fetch(csvURL);
-        const data = await response.text();
+        const response = await fetch(SHEET_CSV_URL);
+        const csvData = await response.text();
+        const rows = csvData.split(/\r?\n/);
         
-        // መረጃውን በመስመር መከፋፈል
-        const rows = data.split(/\r?\n/).slice(1); 
+        let products = rows.slice(1).map(row => {
+            const parts = parseCSVLine(row);
+            return {
+                name: parts[0]?.trim() || "",
+                category: parts[1]?.trim() || "", // Column B
+                price: parts[2]?.trim() || "",
+                description: parts[3]?.trim() || "",
+                image: parts[4]?.trim() || "",
+                status: parts[5]?.trim() || "In Stock",
+                info: parts[6]?.trim() || ""
+            };
+        }).filter(item => item.name.length > 0);
 
-        allProducts = rows.map(row => {
-            // ስሙ መሃል ኮማ ቢኖር እንኳ እንዳይሳሳት የሚያደርግ Regex ዘዴ
-            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            
-            if (cols.length >= 5) {
-                return {
-                    name: cols[0].replace(/"/g, '').trim(),     // Column A: Full Name
-                    category: cols[1].replace(/"/g, '').trim(), // Column B: Category
-                    price: cols[2].replace(/"/g, '').trim(),    // Column C: Price
-                    desc: cols[3].replace(/"/g, '').trim(),     // Column D: Description
-                    img: cols[4].replace(/"/g, '').trim(),      // Column E: Image URL
-                    status: cols[5] ? cols[5].replace(/"/g, '').trim() : ''
-                };
-            }
-        }).filter(p => p && p.name);
+        if (targetCategory !== 'all') {
+            products = products.filter(p => p.category.toLowerCase().includes(targetCategory.toLowerCase()));
+        }
 
-        displayItems(allProducts);
-    } catch (error) {
-        console.error("Failed to load products:", error);
-        document.getElementById('product-list').innerHTML = "<h3>Error loading products. Please try again later.</h3>";
+        renderGrid(products);
+    } catch (err) {
+        console.error("Data error:", err);
     }
 }
 
-// 2. ዕቃዎቹን በዌብሳይቱ ላይ የማሳየት ስራ
-function displayItems(items) {
-    const list = document.getElementById('product-list');
-    list.innerHTML = items.length ? '' : '<h3>No items found in this category.</h3>';
-    
-    items.forEach(p => {
-        // ምስሉ ከጠፋ የ "Placeholder" ምስል እንዲያሳይ
-        const imageUrl = p.img ? p.img : 'https://via.placeholder.com/200?text=No+Image';
-        
-        list.innerHTML += `
+function parseCSVLine(text) {
+    const result = [];
+    let cur = "", inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        if (char === '"') inQuotes = !inQuotes;
+        else if (char === ',' && !inQuotes) { result.push(cur); cur = ""; }
+        else cur += char;
+    }
+    result.push(cur);
+    return result;
+}
+
+function renderGrid(products) {
+    const container = document.getElementById('product-container');
+    container.innerHTML = products.length ? '' : '<p style="text-align:center; grid-column: 1/-1;">No items found in this category.</p>';
+    products.forEach(item => {
+        const statusClass = item.status.toLowerCase().includes('out') ? 'out-of-stock' : 'in-stock';
+        const infoClass = item.info.toLowerCase().includes('new') ? 'info-badge is-new' : 'info-badge';
+        container.innerHTML += `
             <div class="card">
-                <img src="${imageUrl}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/200?text=Image+Error'">
-                <h3>${p.name}</h3>
-                <p style="font-size: 0.9rem; color: #666; height: 40px; overflow: hidden;">${p.desc}</p>
-                <div class="price">${p.price} ETB</div>
-                <button class="btn-main" style="border: 1px solid #0044cc; font-size: 0.9rem;" 
-                    onclick="window.open('https://t.me/selam_446')">Order Now</button>
-            </div>
-        `;
+                <div class="badge-container">
+                    <div class="status-badge ${statusClass}">${item.status}</div>
+                    ${item.info ? `<div class="${infoClass}">${item.info}</div>` : ''}
+                </div>
+                <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/150'">
+                <h3>${item.name}</h3>
+                <p class="description">${item.description}</p>
+                <p class="price">${item.price} ETB</p>
+                <a href="https://t.me/selam_446" class="btn-main">Order on Telegram</a>
+            </div>`;
     });
 }
-
-// 3. በካቴጎሪ የመለየት (Filtering) ስራ
-function filterItems(cat) {
-    if (cat === 'All') {
-        displayItems(allProducts);
-    } else {
-        const filtered = allProducts.filter(p => 
-            p.category && p.category.toLowerCase() === cat.toLowerCase()
-        );
-        displayItems(filtered);
-    }
-}
-
-// 4. ዕቃዎችን የመፈለጊያ (Search) ስራ
-function searchProducts() {
-    const term = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(term) || 
-        p.category.toLowerCase().includes(term)
-    );
-    displayItems(filtered);
-}
-
-// ሲስተሙን ማስጀመር
-init();
